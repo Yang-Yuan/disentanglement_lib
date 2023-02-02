@@ -25,11 +25,17 @@ import PIL
 from six.moves import range
 from tensorflow.compat.v1 import gfile
 
-DSPRITES_PATH = os.path.join(
-    os.environ.get("DISENTANGLEMENT_LIB_DATA", "."), "dsprites",
-    "dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz")
-SCREAM_PATH = os.path.join(
-    os.environ.get("DISENTANGLEMENT_LIB_DATA", "."), "scream", "scream.jpg")
+# DSPRITES_PATH = os.path.join(os.environ.get("DISENTANGLEMENT_LIB_DATA", "."),
+#                              "dsprites",
+#                              "dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz")
+
+DSPRITES_PATH = "C:\\git\\dsprites-dataset\\dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz"
+
+SCREAM_PATH = os.path.join(os.environ.get("DISENTANGLEMENT_LIB_DATA", "."),
+                           "scream",
+                           "scream.jpg")
+
+SCREAM_PATH = "C:\\git\\dsprites-dataset\\The_Scream.jpg"
 
 
 

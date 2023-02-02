@@ -46,6 +46,8 @@ class SplitDiscreteStateSpace(object):
         i for i in range(self.num_factors)
         if i not in self.latent_factor_indices
     ]
+    self.num_states = np.prod(self.factor_sizes)
+    self.state_bases = self.num_states / np.cumprod(self.factor_sizes)
 
   @property
   def num_latent_factors(self):
@@ -53,8 +55,7 @@ class SplitDiscreteStateSpace(object):
 
   def sample_latent_factors(self, num, random_state):
     """Sample a batch of the latent factors."""
-    factors = np.zeros(
-        shape=(num, len(self.latent_factor_indices)), dtype=np.int64)
+    factors = np.zeros(shape=(num, len(self.latent_factor_indices)), dtype=np.int64)
     for pos, i in enumerate(self.latent_factor_indices):
       factors[:, pos] = self._sample_factor(i, num, random_state)
     return factors
@@ -72,6 +73,14 @@ class SplitDiscreteStateSpace(object):
 
   def _sample_factor(self, i, num, random_state):
     return random_state.randint(self.factor_sizes[i], size=num)
+
+  def sample_latent_factors_without_resplacement(self, num, random_state):
+    indices = random_state.choice(self.num_states, num, replace = False)
+    factors = np.zeros(shape = (num, len(self.latent_factor_indices)), dtype = np.int64)
+    for ii, basis in enumerate(self.state_bases):
+      factors[:, ii], indices = np.divmod(indices, basis)
+    assert (0 == indices).all()
+    return factors
 
 
 class StateSpaceAtomIndex(object):

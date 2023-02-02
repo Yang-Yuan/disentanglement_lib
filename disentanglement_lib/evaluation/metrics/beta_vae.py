@@ -30,8 +30,7 @@ import gin.tf
 
 @gin.configurable(
     "beta_vae_sklearn",
-    blacklist=["ground_truth_data", "representation_function", "random_state",
-               "artifact_dir"])
+    denylist=["ground_truth_data", "representation_function", "random_state",  "artifact_dir"])
 def compute_beta_vae_sklearn(ground_truth_data,
                              representation_function,
                              random_state,
@@ -132,7 +131,7 @@ def _generate_training_sample(ground_truth_data, representation_function,
   index = random_state.randint(ground_truth_data.num_factors)
   # Sample two mini batches of latent variables.
   factors1 = ground_truth_data.sample_factors(batch_size, random_state)
-  factors2 = ground_truth_data.sample_factors(batch_size, random_state)
+  factors2 = ground_truth_data.sample_factors_without_replacement(batch_size, random_state)
   # Ensure sampled coordinate is the same across pairs of samples.
   factors2[:, index] = factors1[:, index]
   # Transform latent variables to observation space.

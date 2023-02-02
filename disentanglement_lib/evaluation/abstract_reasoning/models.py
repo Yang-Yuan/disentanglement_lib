@@ -21,7 +21,8 @@ from disentanglement_lib.evaluation.abstract_reasoning import relational_layers
 import gin
 import tensorflow.compat.v1 as tf
 import tensorflow_hub as hub
-from tensorflow.contrib import tpu as contrib_tpu
+# from tensorflow.contrib import tpu as contrib_tpu
+from tensorflow.compat.v1.estimator import tpu as contrib_tpu
 
 
 @gin.configurable

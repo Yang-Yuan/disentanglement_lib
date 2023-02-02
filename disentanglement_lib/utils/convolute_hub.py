@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 import tensorflow.compat.v1 as tf
 import tensorflow_hub as hub
-from tensorflow.contrib import framework as contrib_framework
+from tensorflow.python import framework as contrib_framework
 
 
 def convolute_and_save(module_path, signature, export_path, transform_fn,

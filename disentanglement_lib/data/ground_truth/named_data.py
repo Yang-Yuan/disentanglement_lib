@@ -61,5 +61,7 @@ def get_named_ground_truth_data(name):
     return shapes3d.Shapes3D()
   elif name == "dummy_data":
     return dummy_data.DummyData()
+  elif name == "abstract_dsprites":
+    return dsprites.DSprites([1, 2, 3, 4, 5])
   else:
     raise ValueError("Invalid data set name.")

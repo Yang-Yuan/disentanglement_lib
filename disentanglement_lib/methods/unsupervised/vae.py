@@ -30,7 +30,8 @@ from six.moves import range
 from six.moves import zip
 import tensorflow.compat.v1 as tf
 import gin.tf
-from tensorflow.contrib import tpu as contrib_tpu
+from tensorflow.compat.v1.estimator import tpu as contrib_tpu
+
 
 
 class BaseVAE(gaussian_encoder_model.GaussianEncoderModel):
@@ -219,14 +220,21 @@ class FactorVAE(BaseVAE):
     del labels
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
     data_shape = features.get_shape().as_list()[1:]
+
     z_mean, z_logvar = self.gaussian_encoder(features, is_training=is_training)
     z_sampled = self.sample_from_latent_distribution(z_mean, z_logvar)
+
+    # Approximate q^bar(z) by the randomly permuting each feature dimension across batch
     z_shuffle = shuffle_codes(z_sampled)
+
+    # Use variable scope to share parameters,
+    # i.e., forward the z_sampled and z_shuffle through the same discriminator D
     with tf.variable_scope(tf.get_variable_scope(), reuse=tf.AUTO_REUSE):
       logits_z, probs_z = architectures.make_discriminator(
           z_sampled, is_training=is_training)
       _, probs_z_shuffle = architectures.make_discriminator(
           z_shuffle, is_training=is_training)
+
     reconstructions = self.decode(z_sampled, data_shape, is_training)
     per_sample_loss = losses.make_reconstruction_loss(
         features, reconstructions)
@@ -401,13 +409,13 @@ def total_correlation(z, z_mean, z_logvar):
   log_qz_prob = gaussian_log_density(
       tf.expand_dims(z, 1), tf.expand_dims(z_mean, 0),
       tf.expand_dims(z_logvar, 0))
+
   # Compute log prod_l p(z(x_j)_l) = sum_l(log(sum_i(q(z(z_j)_l|x_i)))
   # + constant) for each sample in the batch, which is a vector of size
   # [batch_size,].
-  log_qz_product = tf.reduce_sum(
-      tf.reduce_logsumexp(log_qz_prob, axis=1, keepdims=False),
-      axis=1,
-      keepdims=False)
+  ime = tf.reduce_logsumexp(log_qz_prob, axis = 1, keepdims = False)
+  log_qz_product = tf.reduce_sum(ime, axis=1, keepdims=False)
+
   # Compute log(q(z(x_j))) as log(sum_i(q(z(x_j)|x_i))) + constant =
   # log(sum_i(prod_l q(z(x_j)_l|x_i))) + constant.
   log_qz = tf.reduce_logsumexp(

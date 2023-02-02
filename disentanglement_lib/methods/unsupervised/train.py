@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """Main training protocol used for unsupervised disentanglement models."""
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +29,9 @@ import numpy as np
 import tensorflow.compat.v1 as tf
 import gin.tf.external_configurables  # pylint: disable=unused-import
 import gin.tf
-from tensorflow.contrib import tpu as contrib_tpu
+from tensorflow.compat.v1.estimator import tpu as contrib_tpu
+
+
 
 
 def train_with_gin(model_dir,
@@ -55,14 +58,14 @@ def train_with_gin(model_dir,
   gin.clear_config()
 
 
-@gin.configurable("model", blacklist=["model_dir", "overwrite"])
+@gin.configurable("model", denylist=["model_dir", "overwrite"])
 def train(model_dir,
-          overwrite=False,
+          overwrite=True,
           model=gin.REQUIRED,
           training_steps=gin.REQUIRED,
           random_seed=gin.REQUIRED,
           batch_size=gin.REQUIRED,
-          eval_steps=1000,
+          eval_steps=10,
           name="",
           model_num=None):
   """Trains the estimator and exports the snapshot and the gin config.
@@ -120,7 +123,8 @@ def train(model_dir,
 
   # Do the actual training.
   tpu_estimator.train(
-      input_fn=_make_input_fn(dataset, random_state.randint(2**32)),
+      # input_fn=_make_input_fn(dataset, random_state.randint(2**32)),  # 2**32 too large for what int32 can represent
+      input_fn = _make_input_fn(dataset, random_state.randint(2**16)),
       steps=training_steps)
 
   # Save model as a TFHub module.
@@ -134,8 +138,8 @@ def train(model_dir,
   # files that we copied along, as we progress in the pipeline. The idea is that
   # these files will be available for analysis at the end.
   results_dict = tpu_estimator.evaluate(
-      input_fn=_make_input_fn(
-          dataset, random_state.randint(2**32), num_batches=eval_steps))
+      # input_fn=_make_input_fn(dataset, random_state.randint(2**32), num_batches=eval_steps))
+      input_fn = _make_input_fn(dataset, random_state.randint(2 ** 16), num_batches = eval_steps))
   results_dir = os.path.join(model_dir, "results")
   results_dict["elapsed_time"] = time.time() - experiment_timer
   results.update_result_directory(results_dir, "train", results_dict)

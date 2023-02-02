@@ -38,7 +38,7 @@ def visualize(model_dir,
               num_animations=5,
               num_frames=20,
               fps=10,
-              num_points_irs=10000):
+              num_points_irs=100):
   """Takes trained model from model_dir and visualizes it in output_dir.
 
   Args:
@@ -197,7 +197,8 @@ def visualize(model_dir,
       visualize_util.save_animation(np.array(images), filename, fps)
 
     # Interventional effects visualization.
-    factors = dataset.sample_factors(num_points_irs, random_state)
+    # factors = dataset.sample_factors(num_points_irs, random_state)
+    factors = dataset.sample_factors_without_replacement(num_points_irs, random_state)
     obs = dataset.sample_observations_from_factors(factors, random_state)
     latents = f(
         dict(images=obs), signature="gaussian_encoder", as_dict=True)["mean"]

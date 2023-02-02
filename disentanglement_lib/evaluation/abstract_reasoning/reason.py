@@ -33,8 +33,8 @@ import numpy as np
 import tensorflow.compat.v1 as tf
 import gin.tf.external_configurables  # pylint: disable=unused-import
 import gin.tf
-from tensorflow.contrib import tpu as contrib_tpu
-
+# from tensorflow.contrib import tpu as contrib_tpu
+from tensorflow.compat.v1.estimator import tpu as contrib_tpu
 
 def reason_with_gin(input_dir,
                     output_dir,
@@ -63,7 +63,7 @@ def reason_with_gin(input_dir,
 
 
 @gin.configurable(
-    "abstract_reasoning", blacklist=["input_dir", "output_dir", "overwrite"])
+    "abstract_reasoning", denylist=["input_dir", "output_dir", "overwrite"])
 def reason(
     input_dir,
     output_dir,
@@ -145,7 +145,7 @@ def reason(
   tpu_estimator = contrib_tpu.TPUEstimator(
       use_tpu=False,
       model_fn=model.model_fn,
-      model_dir=os.path.join(output_dir, "tf_checkpoint"),
+      # model_dir=os.path.join(output_dir, "tf_checkpoint"),
       train_batch_size=batch_size,
       eval_batch_size=batch_size,
       config=run_config)
@@ -163,18 +163,18 @@ def reason(
     tf.logging.info("Training to %d steps.", steps_so_far)
     # Train the model for the specified steps.
     tpu_estimator.train(
-        input_fn=dataset.make_input_fn(random_state.randint(2**32)),
+        input_fn=dataset.make_input_fn(random_state.randint(2**16)),
         steps=training_steps_per_iteration)
     # Compute validation scores used for model selection.
     validation_results = tpu_estimator.evaluate(
         input_fn=dataset.make_input_fn(
-            random_state.randint(2**32), num_batches=eval_steps_per_iteration))
+            random_state.randint(2**16), num_batches=eval_steps_per_iteration))
     validation_scores.append(validation_results["accuracy"])
     tf.logging.info("Validation results %s", validation_results)
     # Compute test scores for final results.
     test_results = tpu_estimator.evaluate(
         input_fn=dataset.make_input_fn(
-            random_state.randint(2**32), num_batches=eval_steps_per_iteration),
+            random_state.randint(2**16), num_batches=eval_steps_per_iteration),
         name="test")
     dict_at_iteration = results.namespaced_dict(
         val=validation_results, test=test_results)

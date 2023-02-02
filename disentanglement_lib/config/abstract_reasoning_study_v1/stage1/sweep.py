@@ -122,7 +122,8 @@ class AbstractReasoningStudyV1(study.Study):
 
   def get_model_config(self, model_num=0):
     """Returns model bindings and config file."""
-    config = get_config()[model_num]
+    all_configs = get_config()
+    config = all_configs[model_num]
     model_bindings = h.to_bindings(config)
     model_config_file = resources.get_file(
         "config/abstract_reasoning_study_v1/stage1/model_configs/shared.gin")
